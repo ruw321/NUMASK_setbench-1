@@ -2,4 +2,4 @@
 
 Try to integrate NUMASK on setbench
 
-This repositary should be inside ds folder in setbench
+This repository should be inside ds folder in setbench
