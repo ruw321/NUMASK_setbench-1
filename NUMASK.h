@@ -58,7 +58,7 @@ private:
     const int numThreads;
     const int minKey;
     const long long maxKey;
-	size_t maxNUMA;
+    size_t maxNUMA;
     node_t* head;
     search_layer* sl[maxNUMA];
 
@@ -93,27 +93,29 @@ private:
 public:
 
     SkipListNUMA(const int _numThreads, const int _minKey, const long long _maxKey) {
-		maxNUMA = numa_max_node();
-		for (int i=0; i<maxNUMA; i++) {
-			sl[i] = new search_layer();
-		}
-	}
+        maxNUMA = numa_max_node();
+        mnode_t* mnode = mnode_new(NULL, node_new(0, NULL, NULL, NULL), 1, tid);
+        inode_t* inode = inode_new(NULL, NULL, mnode, tid);
+        for (int i=0; i<maxNUMA; i++) {
+            sl[i] = new search_layer(tid, inode, new update_queue());
+        }
+    }
 
     ~SkipListNUMA();
 
     bool contains(const int tid, const sl_key_t &key){
-		int numaIndex = numa_node_of_cpu(tid);
-		return sl_contains_old(sl[numaIndex], key, TRANSACTIONAL);
+        int numaIndex = numa_node_of_cpu(tid);
+        return sl_contains_old(sl[numaIndex], key, TRANSACTIONAL);
     };
 
     bool insertIfAbsent(const int tid, const sl_key_t &key, const val_t &value){
         int numaIndex = numa_node_of_cpu(tid);
-		return sl_add_old(sl[numaIndex], key, value, TRANSACTIONAL);
+        return sl_add_old(sl[numaIndex], key, value, TRANSACTIONAL);
     };
 
     bool erase(const int tid, const sl_key_t &key){
         int numaIndex = numa_node_of_cpu(tid);
-		return sl_remove_old(sl[numaIndex], key, TRANSACTIONAL);
+        return sl_remove_old(sl[numaIndex], key, TRANSACTIONAL);
     };
 
 //    bool validate();
@@ -130,11 +132,6 @@ public:
     }
 
 };
-
-template<class RecordManager, typename sl_key_t , typename val_t>
-SkipListNUMA<RecordManager, sl_key_t , val_t>::SkipListNUMA(const int _numThreads, const int _minKey, const long long _maxKey)
-        : numThreads(_numThreads), minKey(_minKey), maxKey(_maxKey), recmgr(new RecordManager(numThreads)) {
-    head = createNode(tid, 0, NULL, NULL, NULL);}
 
 template<class RecordManager, typename sl_key_t , typename val_t>
 SkipListNUMA<RecordManager, sl_key_t , val_t>::~SkipListNUMA() {
