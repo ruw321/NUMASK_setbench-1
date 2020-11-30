@@ -62,8 +62,7 @@ finished.
 #include "common.h"
 #include "queue.h"
 #include "skiplist.h"
-#include "search.h"
-#include "background.h"
+#include "search_and_bg.h"
 
 enum sl_optype { CONTAINS, DELETE, INSERT };
 typedef enum sl_optype sl_optype_t;

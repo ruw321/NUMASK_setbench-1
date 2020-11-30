@@ -12,7 +12,7 @@
 #include <numa.h>
 #include <numaif.h>
 #include "common.h"
-#include "allocator.h"
+//#include "allocator.h"
 
 /* define for search layer and nohotspot address checking
  * 	this is a sanity check to ensure that all memory addresses accessed

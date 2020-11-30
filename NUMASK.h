@@ -31,8 +31,7 @@
 #include "tm.h"
 #include "skiplist.h"
 #include "queue.h"
-#include "search.h"
-#include "background.h"
+#include "search_and_bg.h"
 #include "nohotspot_ops.h"
 
 using namespace std;
