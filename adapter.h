@@ -42,6 +42,16 @@ public:
         return 0;
     }
 
+    void helperThread(){
+        bool test_complete = false;
+        bg_dl_args* data_info;
+        data_info->head = ds->head;
+        data_info->tsleep = 15000;
+        data_info->done = &test_complete;
+        pthread_t dhelper_thread;
+        pthread_create(&dhelper_thread, NULL, data_layer_helper, (void*)data_info);
+    }
+
     void initThread(const int tid) {
         ds->initThread(tid);
     }
