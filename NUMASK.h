@@ -58,8 +58,8 @@ private:
     const int numThreads;
     const int minKey;
     const long long maxKey;
-    size_t maxNUMA;
-    node_t* head;
+    static size_t maxNUMA;
+    node_t* head = node_new(0, NULL, NULL, NULL);
     search_layer* sl[maxNUMA];
 
     node_t* createNode(const int tid, sl_key_t key, val_t value, node_t *prev, node_t *next){
@@ -94,14 +94,22 @@ public:
 
     SkipListNUMA(const int _numThreads, const int _minKey, const long long _maxKey) {
         maxNUMA = numa_max_node();
-        mnode_t* mnode = mnode_new(NULL, node_new(0, NULL, NULL, NULL), 1, tid);
+        mnode_t* mnode = mnode_new(NULL, head, 1, tid);
         inode_t* inode = inode_new(NULL, NULL, mnode, tid);
         for (int i=0; i<maxNUMA; i++) {
             sl[i] = new search_layer(tid, inode, new update_queue());
         }
+
+        for (int i=0; i<maxNUMA; i++){
+            sl[i]->start_helper(0);
+        }
     }
 
-    ~SkipListNUMA();
+    ~SkipListNUMA(){
+        for (int i=0; i<maxNUMA; i++){
+            sl[i]->stop_helper();
+        }
+    };
 
     bool contains(const int tid, const sl_key_t &key){
         int numaIndex = numa_node_of_cpu(tid);
@@ -132,11 +140,6 @@ public:
     }
 
 };
-
-template<class RecordManager, typename sl_key_t , typename val_t>
-SkipListNUMA<RecordManager, sl_key_t , val_t>::~SkipListNUMA() {
-}
-
 template<class RecordManager, typename sl_key_t , typename val_t>
 void SkipListNUMA<RecordManager, sl_key_t , val_t>::initThread(const int tid) {
     recmgr->initThread(tid);
