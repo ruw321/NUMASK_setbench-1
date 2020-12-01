@@ -62,18 +62,6 @@ private:
     node_t* head = node_new(0, NULL, NULL, NULL);
     search_layer* sl[maxNUMA];
 
-    node_t* createNode(const int tid, sl_key_t key, val_t value, node_t *prev, node_t *next){
-        node_t *node;
-        node = recmgr->template allocate<node_t>(tid);
-        node->key       = key;
-        node->val       = value;
-        node->prev      = prev;
-        node->next      = next;
-        node->fresh		= true;
-        node->level		= 0;
-        return node;
-    };
-
     /* private functions */
     int sl_contains_old(search_layer *sl, unsigned int key, int transactional)
     {
