@@ -11,8 +11,9 @@
 #include <stdlib.h>
 #include <numa.h>
 #include <numaif.h>
+#include "allocator.h"
 #include "common.h"
-//#include "allocator.h"
+
 
 /* define for search layer and nohotspot address checking
  * 	this is a sanity check to ensure that all memory addresses accessed
@@ -20,7 +21,7 @@
  * 	percent local accesses in application thread execution
  */
 //#define ADDRESS_CHECKING
-
+numa_allocator** allocators;
 #define MAX_LEVELS 128
 
 #define NUM_LEVELS 2
