@@ -5,7 +5,6 @@
 
 #include <cassert>
 
-
 #define MAX_KCAS 41
 
 #include <unordered_set>
@@ -52,6 +51,8 @@ using namespace std;
 #define TRANSACTIONAL 4
 #define MAX_NUMA_ZONES                  numa_max_node() + 1
 #define MIN_NUMA_ZONES					1
+#define DEFAULT_INITIAL                 1024
+#define DEFAULT_UPDATE                  20
 
 template<class RecordManager, typename sl_key_t, typename val_t>
 class SkipListNUMA {
@@ -65,7 +66,7 @@ private:
     node_t* head = node_new(0, NULL, NULL, NULL);
     //search_layer* sl[maxNUMA];
     search_layer** search_layers;
-    extern numa_allocator** allocators;
+    numa_allocator** allocators;
     struct zone_init_args {
         int 		numa_zone;
         node_t* 	node_sentinel;
@@ -126,6 +127,10 @@ public:
         search_layers = (search_layer**)malloc(num_numa_zones*sizeof(search_layer*));
         pthread_t* thds = (pthread_t*)malloc(num_numa_zones*sizeof(pthread_t));
         allocators = (numa_allocator**)malloc(num_numa_zones*sizeof(numa_allocator*));
+        int initial = DEFAULT_INITIAL;
+        int update = DEFAULT_UPDATE;
+        unsigned num_expected_nodes = (unsigned)(16 * initial * (1.0 + (update/100.0)));
+        unsigned buffer_size = CACHE_LINE_SIZE * num_expected_nodes;
 
         for(int i = 0; i < num_numa_zones; ++i) {
             zone_init_args* zia = (zone_init_args*)malloc(sizeof(zone_init_args));
@@ -173,28 +178,23 @@ public:
 
     bool contains(const int tid, const sl_key_t &key){
         int numaIndex = numa_node_of_cpu(tid);
-        return sl_contains_old(sl[numaIndex], key, TRANSACTIONAL);
+        return sl_contains_old(search_layers[numaIndex], key, TRANSACTIONAL);
     };
 
     bool insertIfAbsent(const int tid, const sl_key_t &key, const val_t &value){
         int numaIndex = numa_node_of_cpu(tid);
-        return sl_add_old(sl[numaIndex], key, value, TRANSACTIONAL);
+        return sl_add_old(search_layers[numaIndex], key, value, TRANSACTIONAL);
     };
 
     bool erase(const int tid, const sl_key_t &key){
         int numaIndex = numa_node_of_cpu(tid);
-        return sl_remove_old(sl[numaIndex], key, TRANSACTIONAL);
+        return sl_remove_old(search_layers[numaIndex], key, TRANSACTIONAL);
     };
 
-//    bool validate();
-//
-//    void printDebuggingDetails();
-
-    void initThread(const int tid) {
-        // TODO: get the search layer from the thread 
-        // get the cur_zone (get_zone) from the search layer
-        // numa_run_on_node(cur_zone)
-    };
+    void initThread(const int tid);
+    // TODO: for initThread: get the search layer from the thread 
+    // get the cur_zone (get_zone) from the search layer
+    // numa_run_on_node(cur_zone)
 
     void deinitThread(const int tid);
 

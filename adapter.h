@@ -10,12 +10,17 @@
 #include "random_fnv1a.h"
 #include "record_manager.h"
 #ifdef USE_TREE_STATS
+#   define TREE_STATS_BYTES_AT_DEPTH
 #   include "tree_stats.h"
 #endif
 #include "NUMASK.h"
+#include "skiplist.h"
+
+//TODO: define node as a template for NUMASK 
+//this should be defined in NUMASK.h 
 
 #define RECORD_MANAGER_T record_manager<Reclaim, Alloc, Pool, Node<K, V> >
-#define DATA_STRUCTURE_T SkipListKCAS<RECORD_MANAGER_T, K, V>
+#define DATA_STRUCTURE_T SkipListNUMA<RECORD_MANAGER_T, K, V>
 
 
 template <typename K, typename V, class Reclaim = reclaimer_debra<K>, class Alloc = allocator_new<K>, class Pool = pool_none<K>>
@@ -98,56 +103,6 @@ public:
         ds->debugGetRecMgr()->debugGCSingleThreaded();
     }
 
-#ifdef USE_TREE_STATS
-    class NodeHandler {
-    public:
-        typedef Node<K, V> * NodePtrType;
-        K minKey;
-        K maxKey;
-
-        NodeHandler(const K& _minKey, const K& _maxKey) {
-            minKey = _minKey;
-            maxKey = _maxKey;
-        }
-
-        class ChildIterator {
-        private:
-            NodePtrType node; // node being iterated over
-        public:
-            ChildIterator(NodePtrType _node) {
-                node = _node;
-            }
-
-            bool hasNext() {
-                return node->next[0] != NULL;
-            }
-
-            NodePtrType next() {
-               return node->next[0];
-            }
-        };
-
-        bool isLeaf(NodePtrType node) {
-            return node->next[0] == NULL ? true : false;
-        }
-        size_t getNumChildren(NodePtrType node) {
-            return node->next[0] == NULL ? 0 : 1;
-        }
-        size_t getNumKeys(NodePtrType node) {
-            return node == NULL ? 0 : 1;
-        }
-
-        size_t getSumOfKeys(NodePtrType node) {
-            return (size_t) node->key;
-        }
-        ChildIterator getChildIterator(NodePtrType node) {
-            return ChildIterator(node);
-        }
-    };
-    TreeStats<NodeHandler> * createTreeStats(const K& _minKey, const K& _maxKey) {
-        return new TreeStats<NodeHandler>(new NodeHandler(_minKey, _maxKey), ds->getRoot(), false);
-    }
-#endif
 };
 
 
