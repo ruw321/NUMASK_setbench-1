@@ -192,9 +192,8 @@ public:
     };
 
     void initThread(const int tid);
-    // TODO: for initThread: get the search layer from the thread 
-    // get the cur_zone (get_zone) from the search layer
-    // numa_run_on_node(cur_zone)
+    // TODO: more efficient way is to call numa node of cpu in 
+    // this function so we can reduce the system calls
 
     void deinitThread(const int tid);
 

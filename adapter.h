@@ -16,11 +16,8 @@
 #include "NUMASK.h"
 #include "skiplist.h"
 
-//TODO: define node as a template for NUMASK 
-//this should be defined in NUMASK.h 
-
-#define RECORD_MANAGER_T record_manager<Reclaim, Alloc, Pool, Node<K, V> >
-#define DATA_STRUCTURE_T SkipListNUMA<RECORD_MANAGER_T, K, V>
+#define RECORD_MANAGER_T record_manager<Reclaim, Alloc, Pool>
+#define DATA_STRUCTURE_T SkipListNUMA<RECORD_MANAGER_T, K, V, Node<K, V>>
 
 
 template <typename K, typename V, class Reclaim = reclaimer_debra<K>, class Alloc = allocator_new<K>, class Pool = pool_none<K>>
@@ -37,7 +34,7 @@ public:
                RandomFNV1A * const unused2)
             : NO_VALUE(VALUE_RESERVED)
             , ds(new DATA_STRUCTURE_T(NUM_THREADS, KEY_MIN, KEY_MAX))
-    { }
+    {}
 
     ~ds_adapter() {
         delete ds;
@@ -45,16 +42,6 @@ public:
 
     V getNoValue() {
         return 0;
-    }
-
-    void helperThread(){
-        bool test_complete = false;
-        bg_dl_args* data_info;
-        data_info->head = ds->head;
-        data_info->tsleep = 15000;
-        data_info->done = &test_complete;
-        pthread_t dhelper_thread;
-        pthread_create(&dhelper_thread, NULL, data_layer_helper, (void*)data_info);
     }
 
     void initThread(const int tid) {
