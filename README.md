@@ -13,3 +13,5 @@ We have built the basic skeleton for this integration, the NUMASK.H has no more 
 Throughout the code, we marked some of the TODO in the comments that require more work. 
 
 Most of the changes are supposed to be made in NUMASK.h, and we should most likely leave adapter.h very similar to its current state. 
+
+For more information, please refer to numask_setbench.pdf
